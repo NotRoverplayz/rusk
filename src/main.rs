@@ -1,3 +1,7 @@
+// Hello world! This is RUSK, a simple programming language for creating interactive applications and games.
+
+
+
 
 // Uncomment only for final Windows release builds:
 // #![windows_subsystem = "windows"]
