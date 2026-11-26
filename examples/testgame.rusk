@@ -1,0 +1,113 @@
+# Dungeon Quest - A Text Adventure in RUSK
+
+let player be "River"
+let hp be 100
+let gold be 10
+let has_key be 0
+
+# Set each choice to 1 or 2, then run this file again to try another route.
+let turn1_choice be 1    # 1 = Search the chest, 2 = Walk past quietly
+let turn2_choice be 1    # 1 = Fight the goblin, 2 = Sneak around
+let turn3_choice be 1    # 1 = Open the iron door, 2 = Take the dark tunnel
+
+function show_status() {
+    say "[HP: " + hp + " | Gold: " + gold + " | Key: " + has_key + "]"
+}
+
+say "==================================="
+say "   DUNGEON OF THE SHADOW CROWN"
+say "==================================="
+say "Welcome, " + player + "! Your quest begins."
+show_status()
+
+# --- SCENE 1: THE ENTRY HALL ---
+say ""
+say "--- Scene 1: The Dusty Entry Hall ---"
+say "You spot a wooden chest in the corner."
+
+if turn1_choice == 1 then
+    say "You pry open the chest and find a rusty key and 15 gold!"
+    let has_key be 1
+    let gold be gold + 15
+else
+    if turn1_choice == 2 then
+        say "You leave the chest alone and move deeper into the hall."
+    else
+        say "You hesitate and leave the chest untouched. (Choose 1 or 2 next time.)"
+    end
+end
+
+show_status()
+
+# --- SCENE 2: THE GOBLIN GUARD ---
+say ""
+say "--- Scene 2: The Goblin Guard ---"
+say "A grumpy goblin blocks the bridge ahead!"
+
+if turn2_choice == 1 then
+    say "You draw your sword and charge!"
+    repeat 3 times
+        say "CLANG! You trade blows with the goblin..."
+        let hp be hp - 10
+    end
+    say "The goblin runs away! You loot 20 gold."
+    let gold be gold + 20
+else
+    if turn2_choice == 2 then
+        say "You stick to the shadows and slip right past him."
+        say "On the other side, you find 10 gold dropped near the bridge."
+        let gold be gold + 10
+    else
+        say "You cannot decide, and the goblin blocks your way. (Choose 1 or 2 next time.)"
+    end
+end
+
+show_status()
+
+# --- SCENE 3: THE FINAL GATE ---
+if hp >= 1 then
+    say ""
+    say "--- Scene 3: The Treasure Chamber ---"
+
+    if turn3_choice == 1 then
+        say "You try the heavy iron door..."
+        if has_key >= 1 then
+            say "The rusty key clicks! Inside lies a mountain of treasure!"
+            let gold be gold + 100
+        else
+            say "Locked tight! A trap dart hits you as you step back."
+            let hp be hp - 30
+        end
+    else
+        if turn3_choice == 2 then
+            say "You take the dark tunnel and barely escape a falling boulder!"
+            let hp be hp - 20
+        else
+            say "You cannot choose a path, so you retreat from the gate. (Choose 1 or 2 next time.)"
+        end
+    end
+else
+    say ""
+    say "You collapse before reaching the treasure chamber."
+end
+
+# --- ENDING ---
+say ""
+say "==================================="
+say "        ADVENTURE COMPLETE"
+say "==================================="
+show_status()
+
+if hp >= 1 then
+    if gold >= 100 then
+        say "LEGENDARY VICTORY! " + player + " escaped rich and alive!"
+    else
+        if hp <= 30 then
+            say "NARROW ESCAPE! " + player + " survived with barely any strength left."
+        else
+            say "SURVIVED! " + player + " made it out, though without the main treasure."
+        end
+    end
+else
+    say "DEFEATED! The dungeon claimed another adventurer..."
+end

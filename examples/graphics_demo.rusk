@@ -1,0 +1,82 @@
+window("RUSK Graphics Demo", 1024, 768)
+
+let accent be rgb(139, 92, 246)
+let glass be rgba(0, 150, 255, 128)
+let ball_x be 80
+let ball_speed be 180
+let clicks be 0
+let horizontal_gradient be false
+
+function update() {
+    if key_pressed("ESCAPE") then
+        quit()
+    end
+
+    if key_pressed("SPACE") then
+        set horizontal_gradient to not horizontal_gradient
+    end
+
+    if mouse_pressed("LEFT") then
+        set clicks to clicks + 1
+    end
+
+    set ball_x to ball_x + ball_speed * delta_time()
+
+    if ball_x > screen_width() - 40 then
+        set ball_x to 40
+    end
+}
+
+function draw() {
+    if horizontal_gradient then
+        gradient_horizontal("#101020", "#301060")
+    else
+        gradient_vertical("#101020", "#301060")
+    end
+
+    text("RUSK GRAPHICS DEMO", 24, 38, 30, "white")
+    text("SPACE: switch gradient | ESC: quit", 24, 66, 18, "#B8A7D9")
+    text("SIZE: " + screen_width() + " x " + screen_height(), screen_width() - 240, 32, 18, "white")
+    text("FPS: " + fps() + "  TIME: " + time(), screen_width() - 240, 58, 18, "white")
+
+    rect(30, 95, 150, 82, "#8B5CF6")
+    rect_outline(205, 95, 150, 82, "white", 3)
+    rounded_rect(380, 95, 170, 82, 16, accent)
+    rounded_rect_outline(575, 95, 180, 82, 18, "#F4D35E", 4)
+
+    text("HEX", 84, 206, 17, "white")
+    text("OUTLINE", 242, 206, 17, "white")
+    text("RGB", 443, 206, 17, "white")
+    text("ROUNDED", 620, 206, 17, "white")
+
+    circle(85, 290, 42, "lime")
+    circle_outline(195, 290, 42, "white", 4)
+    triangle(290, 250, 245, 330, 335, 330, "orange")
+    polygon(430, 290, 6, 48, 0, "#35C9DD")
+    polygon_outline(565, 290, 5, 48, -18, "white", 3)
+    arc(710, 290, 42, 20, 310, "#F4D35E", 4)
+    ellipse(855, 290, 110, 64, 20, "#E76F51")
+    ellipse_outline(970, 290, 82, 54, -20, "white", 3)
+
+    line(30, 380, screen_width() - 30, 380, "#B8A7D9", 2)
+    pixel(32, 390, "white")
+    rounded_rect(45, 405, 220, 110, 18, glass)
+    rect(285, 405, 150, 110, rgba(255, 100, 50, 128))
+    text("RGBA TRANSPARENCY", 470, 450, 21, "white")
+    text("alpha blends over the gradient", 470, 480, 17, "#D0C6E8")
+
+    circle(ball_x, 570, 22, accent)
+    text("DELTA-TIME ANIMATION", 45, 575, 18, "white")
+    text("clicks: " + clicks, 45, 625, 19, "white")
+    text("mouse: " + mouse_x() + ", " + mouse_y(), 45, 652, 17, "#D0C6E8")
+
+    if mouse_down("LEFT") then
+        circle(mouse_x(), mouse_y(), 12, rgba(255, 255, 255, 160))
+    else
+        circle(mouse_x(), mouse_y(), 8, "#8B5CF6")
+    end
+
+    if key_down("SPACE") then
+        text("SPACE IS DOWN", 45, 700, 17, "lime")
+    end
+}

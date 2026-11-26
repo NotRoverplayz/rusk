@@ -1,0 +1,16 @@
+window("Score Test", 3000, 1000)
+
+function update() {
+    if key_pressed("ESCAPE") then
+        quit()
+    end
+}
+
+let score be 213805
+
+say score
+
+
+let score be score + 2345
+
+say score

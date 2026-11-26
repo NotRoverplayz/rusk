@@ -1,0 +1,43 @@
+
+<window title="RUSK Layout Demo" script="main.rusk">
+    <body background="#0b0b14">
+        <column gap="24px" align="center" padding="50px">
+            <text color="#a970ff" size="56">
+                RUSK
+            </text>
+
+            <text color="white" size="20">
+                Build anything. Your way.
+            </text>
+
+            <row gap="16px" justify="center">
+                <button color="#813cff">
+                    Get Started
+                </button>
+
+                <button color="#252536">
+                    Documentation
+                </button>
+            </row>
+
+            <text bind="counter" color="white" size="20">0</text>
+            <button on-click="increment" color="#813cff">
+                Increment
+            </button>
+
+            <grid columns="3" gap="20px" width="100%">
+                <container background="#191929" padding="25px">
+                    <text color="white">Fast</text>
+                </container>
+
+                <container background="#191929" padding="25px">
+                    <text color="white">Flexible</text>
+                </container>
+
+                <container background="#191929" padding="25px">
+                    <text color="white">Powerful</text>
+                </container>
+            </grid>
+        </column>
+    </body>
+</window>

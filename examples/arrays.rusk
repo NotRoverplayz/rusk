@@ -1,0 +1,16 @@
+
+let snake be [400, 380, 360]
+
+say snake
+say snake[0]
+say snake[1]
+
+set snake[0] to 420
+
+say snake
+
+append 340 to snake
+append 320 to snake
+
+say snake
+say length(snake)

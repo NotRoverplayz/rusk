@@ -1,0 +1,5 @@
+let counter be 0
+
+function increment() {
+    set counter to counter + 1
+}

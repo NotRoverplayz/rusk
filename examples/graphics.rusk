@@ -1,0 +1,16 @@
+window("RUSK Graphics", 3400, 1440)
+
+function update() {
+    if key_pressed("ESCAPE") then
+        quit()
+    end
+}
+
+function draw() {
+    clear("black")
+
+    rect(100, 100, 200, 100, "green")
+    circle(450, 200, 60, "red")
+
+    text("HELLO FROM RUSK", 200, 400, 40, "white")
+}

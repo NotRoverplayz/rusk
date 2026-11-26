@@ -1,0 +1,42 @@
+
+window("Multiplication Table", 800, 500)
+
+let number be 0
+let submitted be false
+
+function update() {
+    if input_submitted() then
+        set number to to_number(input_value())
+        set submitted to true
+    end
+
+    if key_pressed("ESCAPE") then
+        quit()
+    end
+}
+
+function draw() {
+    clear("black")
+
+    text("MULTIPLICATION TABLE", 50, 55, 30, "white")
+    text("Enter any number:", 50, 100, 22, "white")
+
+    input_box("Your number", 50, 120, 300, 50)
+
+    if submitted then
+        text("Table for " + number, 50, 220, 25, "lime")
+
+        let row be 1
+        repeat 17 times
+            text(
+                number + " x " + row + " = " + number * row,
+                50,
+                255 + row * 13,
+                18,
+                "white"
+            )
+
+            set row to row + 1
+        end
+    end
+}

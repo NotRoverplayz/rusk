@@ -1,0 +1,96 @@
+
+window("RUSK Task Manager", 1000, 650)
+
+let tasks be ["Learn RUSK", "Build a game", "Create an app"]
+let completed be [false, false, false]
+let selected be 0
+let new_task be ""
+let message be "Welcome to RUSK Task Manager!"
+
+function add_task() {
+    if length(new_task) > 0 then
+        append new_task to tasks
+        append false to completed
+        set new_task to ""
+        set message to "Task added!"
+    end
+}
+
+function toggle_task(index) {
+    if index >= 0 and index < length(tasks) then
+        set completed[index] to not completed[index]
+        set message to "Task updated!"
+    end
+}
+
+function draw() {
+    clear("#10121b")
+
+    rect(0, 0, 230, 650, "#171a27")
+    rect(230, 0, 770, 70, "#1d2130")
+
+    text("RUSK", 35, 55, 36, "#a78bfa")
+    text("TASK MANAGER", 35, 105, 16, "#888899")
+
+    text("Dashboard", 35, 175, 20, "white")
+    text("My Tasks", 35, 220, 20, "#a78bfa")
+    text("Settings", 35, 265, 20, "#888899")
+
+    text("MY WORKSPACE", 270, 45, 16, "#9999aa")
+    text("My Tasks", 270, 120, 34, "white")
+    text(message, 270, 155, 16, "#a78bfa")
+    text("TASKS", 270, 210, 17, "#9999aa")
+
+    let i be 0
+
+    repeat length(tasks) times
+        let y be 240 + i * 65
+
+        rect(265, y - 30, 700, 52, "#202536")
+
+        if completed[i] then
+            text("[DONE]", 285, y, 16, "#4ade80")
+        else
+            text("[TODO]", 285, y, 16, "#fbbf24")
+        end
+
+        text(tasks[i], 390, y, 20, "white")
+
+        if selected == i then
+            rect_outline(265, y - 30, 700, 52, "#a78bfa", 2)
+        end
+
+        set i to i + 1
+    end
+
+    text("UP/DOWN: Select task", 270, 570, 16, "#888899")
+    text("SPACE: Complete task", 270, 595, 16, "#888899")
+    text("N: Add example task", 270, 620, 16, "#888899")
+}
+
+function update() {
+    if key_pressed("DOWN") then
+        if selected < length(tasks) - 1 then
+            set selected to selected + 1
+        end
+    end
+
+    if key_pressed("UP") then
+        if selected > 0 then
+            set selected to selected - 1
+        end
+    end
+
+    if key_pressed("SPACE") then
+        toggle_task(selected)
+    end
+
+    if key_pressed("N") then
+        set new_task to "New RUSK task"
+        add_task()
+    end
+
+    if key_pressed("ESCAPE") then
+        quit()
+    end
+}

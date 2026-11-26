@@ -1,0 +1,277 @@
+
+window("Snake", 800, 600)
+
+let snake_x be [400, 380, 360, 340]
+let snake_y be [300, 300, 300, 300]
+
+let food_x be 200
+let food_y be 200
+
+let direction be "RIGHT"
+let score be 0
+let game_over be false
+
+let move_timer be 0
+let move_delay be 0.12
+
+let index be 0
+let tail_x be 0
+let tail_y be 0
+let scale be 1
+let offset_x be 0
+let offset_y be 0
+let mouse_game_x be 0
+let mouse_game_y be 0
+let menu_open be false
+let settings_open be false
+let background_colors be ["#101820", "#10291F", "#2B1634", "#1A2340", "#30251A"]
+let background_index be 0
+let speed_name be "NORMAL"
+
+function update_viewport() {
+    set scale to screen_width() / 800
+
+    if screen_height() / 600 < scale then
+        set scale to screen_height() / 600
+    end
+
+    set offset_x to (screen_width() - 800 * scale) / 2
+    set offset_y to (screen_height() - 600 * scale) / 2
+}
+
+function update() {
+    update_viewport()
+    set mouse_game_x to (mouse_x() - offset_x) / scale
+    set mouse_game_y to (mouse_y() - offset_y) / scale
+
+    if menu_open then
+        handle_menu()
+    else
+        if key_pressed("ESCAPE") then
+            set menu_open to true
+            set settings_open to false
+        else
+            if game_over then
+                if key_pressed("SPACE") then
+                    set snake_x to [400, 380, 360, 340]
+                    set snake_y to [300, 300, 300, 300]
+
+                    set direction to "RIGHT"
+                    set score to 0
+                    set game_over to false
+                    set move_timer to 0
+                    set food_x to 200
+                    set food_y to 200
+                end
+            else
+                move_snake()
+            end
+        end
+    end
+}
+
+function handle_menu() {
+    if key_pressed("ESCAPE") then
+        if settings_open then
+            set settings_open to false
+        else
+            set menu_open to false
+        end
+    end
+
+    if mouse_pressed("LEFT") then
+        if settings_open then
+            if mouse_game_x >= 250 and mouse_game_x <= 480 and mouse_game_y >= 250 and mouse_game_y <= 298 then
+                set background_index to background_index + 1
+                if background_index >= length(background_colors) then
+                    set background_index to 0
+                end
+            end
+
+            if mouse_game_x >= 250 and mouse_game_x <= 530 and mouse_game_y >= 335 and mouse_game_y <= 383 then
+                if speed_name == "NORMAL" then
+                    set speed_name to "FAST"
+                    set move_delay to 0.08
+                else
+                    if speed_name == "FAST" then
+                        set speed_name to "SLOW"
+                        set move_delay to 0.18
+                    else
+                        set speed_name to "NORMAL"
+                        set move_delay to 0.12
+                    end
+                end
+            end
+
+            if mouse_game_x >= 250 and mouse_game_x <= 530 and mouse_game_y >= 420 and mouse_game_y <= 468 then
+                set settings_open to false
+            end
+        else
+            if mouse_game_x >= 300 and mouse_game_x <= 500 and mouse_game_y >= 230 and mouse_game_y <= 278 then
+                set menu_open to false
+            end
+
+            if mouse_game_x >= 300 and mouse_game_x <= 500 and mouse_game_y >= 295 and mouse_game_y <= 343 then
+                set settings_open to true
+            end
+
+            if mouse_game_x >= 300 and mouse_game_x <= 500 and mouse_game_y >= 360 and mouse_game_y <= 408 then
+                quit()
+            end
+        end
+    end
+}
+
+function move_snake() {
+    if key_pressed("UP") or key_pressed("W") then
+        if direction != "DOWN" then
+            set direction to "UP"
+        end
+    end
+
+    if key_pressed("DOWN") or key_pressed("S") then
+        if direction != "UP" then
+            set direction to "DOWN"
+        end
+    end
+
+    if key_pressed("LEFT") or key_pressed("A") then
+        if direction != "RIGHT" then
+            set direction to "LEFT"
+        end
+    end
+
+    if key_pressed("RIGHT") or key_pressed("D") then
+        if direction != "LEFT" then
+            set direction to "RIGHT"
+        end
+    end
+
+    set move_timer to move_timer + delta_time()
+
+    if move_timer >= move_delay then
+        set move_timer to 0
+
+        set tail_x to snake_x[length(snake_x) - 1]
+        set tail_y to snake_y[length(snake_y) - 1]
+
+        set index to length(snake_x) - 1
+
+        repeat length(snake_x) - 1 times
+            set snake_x[index] to snake_x[index - 1]
+            set snake_y[index] to snake_y[index - 1]
+
+            set index to index - 1
+        end
+
+        if direction == "UP" then
+            set snake_y[0] to snake_y[0] - 20
+        end
+
+        if direction == "DOWN" then
+            set snake_y[0] to snake_y[0] + 20
+        end
+
+        if direction == "LEFT" then
+            set snake_x[0] to snake_x[0] - 20
+        end
+
+        if direction == "RIGHT" then
+            set snake_x[0] to snake_x[0] + 20
+        end
+
+        if snake_x[0] < 0 or snake_x[0] >= 800 or snake_y[0] < 80 or snake_y[0] >= 600 then
+            set game_over to true
+        end
+
+        set index to 1
+
+        repeat length(snake_x) - 1 times
+            if snake_x[0] == snake_x[index] and snake_y[0] == snake_y[index] then
+                set game_over to true
+            end
+
+            set index to index + 1
+        end
+
+        if snake_x[0] == food_x and snake_y[0] == food_y then
+            set score to score + 1
+
+            append tail_x to snake_x
+            append tail_y to snake_y
+
+            set food_x to random_int(0, 39) * 20
+            set food_y to random_int(4, 29) * 20
+        end
+    end
+}
+
+function draw_button(label, x, y, width, height, hovered) {
+    if hovered then
+        rounded_rect(offset_x + x * scale, offset_y + y * scale, width * scale, height * scale, 10 * scale, "#6D28D9")
+    else
+        rounded_rect(offset_x + x * scale, offset_y + y * scale, width * scale, height * scale, 10 * scale, "#312E81")
+    end
+
+    rounded_rect_outline(offset_x + x * scale, offset_y + y * scale, width * scale, height * scale, 10 * scale, "#C4B5FD", 2 * scale)
+    text(label, offset_x + (x + 20) * scale, offset_y + (y + 31) * scale, 20 * scale, "white")
+}
+
+function draw_menu() {
+    rect(0, 0, screen_width(), screen_height(), rgba(0, 0, 0, 170))
+
+    if settings_open then
+        rounded_rect(offset_x + 220 * scale, offset_y + 125 * scale, 360 * scale, 360 * scale, 20 * scale, "#17152E")
+        rounded_rect_outline(offset_x + 220 * scale, offset_y + 125 * scale, 360 * scale, 360 * scale, 20 * scale, "#A78BFA", 3 * scale)
+
+        text("SETTINGS", offset_x + 330 * scale, offset_y + 185 * scale, 30 * scale, "white")
+        text("BACKGROUND", offset_x + 250 * scale, offset_y + 230 * scale, 18 * scale, "white")
+        draw_button("NEXT COLOR", 250, 250, 230, 48, mouse_game_x >= 250 and mouse_game_x <= 480 and mouse_game_y >= 250 and mouse_game_y <= 298)
+        rect(offset_x + 500 * scale, offset_y + 250 * scale, 44 * scale, 44 * scale, background_colors[background_index])
+
+        text("GAME SPEED", offset_x + 250 * scale, offset_y + 320 * scale, 18 * scale, "white")
+        draw_button("SPEED: " + speed_name, 250, 335, 280, 48, mouse_game_x >= 250 and mouse_game_x <= 530 and mouse_game_y >= 335 and mouse_game_y <= 383)
+        draw_button("BACK", 250, 420, 280, 48, mouse_game_x >= 250 and mouse_game_x <= 530 and mouse_game_y >= 420 and mouse_game_y <= 468)
+    else
+        rounded_rect(offset_x + 250 * scale, offset_y + 145 * scale, 300 * scale, 330 * scale, 20 * scale, "#17152E")
+        rounded_rect_outline(offset_x + 250 * scale, offset_y + 145 * scale, 300 * scale, 330 * scale, 20 * scale, "#A78BFA", 3 * scale)
+
+        text("PAUSED", offset_x + 340 * scale, offset_y + 200 * scale, 34 * scale, "white")
+        draw_button("RESUME", 300, 230, 200, 48, mouse_game_x >= 300 and mouse_game_x <= 500 and mouse_game_y >= 230 and mouse_game_y <= 278)
+        draw_button("SETTINGS", 300, 295, 200, 48, mouse_game_x >= 300 and mouse_game_x <= 500 and mouse_game_y >= 295 and mouse_game_y <= 343)
+        draw_button("QUIT GAME", 300, 360, 200, 48, mouse_game_x >= 300 and mouse_game_x <= 500 and mouse_game_y >= 360 and mouse_game_y <= 408)
+        text("ESC: resume", offset_x + 345 * scale, offset_y + 445 * scale, 16 * scale, "#C4B5FD")
+    end
+}
+
+function draw() {
+    update_viewport()
+    clear(background_colors[background_index])
+
+    text("RUSK SNAKE", offset_x + 20 * scale, offset_y + 35 * scale, 30 * scale, "lime")
+    text("SCORE: " + score, offset_x + 650 * scale, offset_y + 35 * scale, 22 * scale, "white")
+    text("LENGTH: " + length(snake_x), offset_x + 350 * scale, offset_y + 35 * scale, 20 * scale, "cyan")
+
+    rect(offset_x, offset_y + 60 * scale, 800 * scale, 2 * scale, "gray")
+
+    rect(offset_x + food_x * scale, offset_y + food_y * scale, 18 * scale, 18 * scale, "red")
+
+    set index to 1
+
+    repeat length(snake_x) - 1 times
+        rect(offset_x + snake_x[index] * scale, offset_y + snake_y[index] * scale, 18 * scale, 18 * scale, "green")
+        set index to index + 1
+    end
+
+    rect(offset_x + snake_x[0] * scale, offset_y + snake_y[0] * scale, 18 * scale, 18 * scale, "lime")
+
+    if game_over then
+        text("GAME OVER", offset_x + 285 * scale, offset_y + 270 * scale, 45 * scale, "red")
+        text("FINAL SCORE: " + score, offset_x + 315 * scale, offset_y + 320 * scale, 25 * scale, "white")
+        text("PRESS SPACE TO RESTART", offset_x + 255 * scale, offset_y + 370 * scale, 20 * scale, "white")
+    end
+
+    if menu_open then
+        draw_menu()
+    end
+}

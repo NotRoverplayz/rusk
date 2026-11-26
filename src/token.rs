@@ -1,0 +1,48 @@
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Token {
+    Number(f64),
+    String(String),
+    Identifier(String),
+
+    Let,
+    Set,
+    To,
+    Be,
+    Say,
+    Function,
+    If,
+    Then,
+    Else,
+    End,
+    Repeat,
+    Times,
+    True,
+    False,
+    And,
+    Or,
+    Not,
+
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    LeftBracket,
+    RightBracket,
+    Comma,
+
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Equal,
+    EqualEqual,
+    NotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+
+    Newline,
+    Eof,
+}

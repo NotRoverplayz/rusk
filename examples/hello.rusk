@@ -1,0 +1,14 @@
+say "Welcome to RUSK!"
+
+let number be 7
+let rows be 10
+
+say "Multiplication table"
+
+function show_row(value) {
+    say value * number
+}
+
+repeat rows times
+    show_row(7)
+end

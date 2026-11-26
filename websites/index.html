@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUSK Layout Demo</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; }
+button { cursor: pointer; border: none; padding: 12px 24px; border-radius: 8px; }
+.rusk-row { display: flex; flex-direction: row; }
+.rusk-column { display: flex; flex-direction: column; }
+.rusk-center { display: flex; justify-content: center; align-items: center; }
+.rusk-container { width: 100%; max-width: 1200px; margin-left: auto; margin-right: auto; }
+.rusk-grid { display: grid; }
+.rusk-spacer { flex: 1; }
+.rusk-text { margin: 0; }
+@keyframes rusk-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rusk-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes rusk-slide { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes rusk-scale { from { transform: scale(.85); } to { transform: scale(1); } }
+@keyframes rusk-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes rusk-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+<script>
+(() => {
+  const validHandler = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  const handlers = ["on-click","on-hover","on-focus","on-change","on-submit","on-input","on-load","on-scroll","on-keydown","on-keyup"];
+  window.RuskWeb = window.RuskWeb || {
+    state: {},
+    setState(name, value) {
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) return;
+      this.state[name] = value;
+      document.querySelectorAll("*").forEach(el => {
+        if (el.getAttribute("data-rusk-bind") !== name) return;
+        if (el instanceof HTMLInputElement) {
+          if (el.type === "checkbox") el.checked = Boolean(value);
+          else el.value = String(value);
+        } else if (el instanceof HTMLTextAreaElement) {
+          el.value = String(value);
+        } else if (el instanceof HTMLSelectElement) {
+          el.value = String(value);
+        } else {
+          el.textContent = String(value);
+        }
+      });
+    },
+    call(name, payload) {
+      if (!validHandler.test(name)) return;
+      if (window.RuskApp && typeof window.RuskApp[name] === "function") {
+        try { window.RuskApp[name](payload || {}); }
+        catch (error) { console.error(`RUSK runtime error in '${name}':`, error instanceof Error ? error.message : error); }
+      } else {
+        console.warn(`RUSK web handler not registered: ${name}`);
+      }
+    }
+  };
+  const eventMap = { "on-click":"click","on-hover":"mouseover","on-focus":"focus","on-change":"change","on-submit":"submit","on-input":"input","on-load":"load","on-scroll":"scroll","on-keydown":"keydown","on-keyup":"keyup" };
+  const registerEvents = () => {
+  document.querySelectorAll("*").forEach(el => {
+    handlers.forEach(name => {
+      const handler = el.dataset["rusk" + name.split("-").map(part => part[0].toUpperCase() + part.slice(1)).join("")];
+      if (!handler || !validHandler.test(handler)) return;
+      el.addEventListener(eventMap[name], event => {
+        if (name === "on-submit") event.preventDefault();
+        const payload = { event, element: el };
+        if (el instanceof HTMLInputElement) payload.value = el.type === "checkbox" ? el.checked : el.value;
+        else if (el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) payload.value = el.value;
+        RuskWeb.call(handler, payload);
+      });
+    });
+  });
+  document.querySelectorAll("[data-rusk-bind]").forEach(el => {
+    const name = el.getAttribute("data-rusk-bind");
+    if (Object.prototype.hasOwnProperty.call(RuskWeb.state, name)) {
+      RuskWeb.setState(name, RuskWeb.state[name]);
+    }
+  });
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", registerEvents, { once: true });
+  else registerEvents();
+})();
+</script>
+<script>
+(() => {
+  const ruskState = {};
+  const ruskFunctions = {};
+  let ruskLocals = {};
+  const ruskBind = (name, value) => {
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) throw new Error(`Invalid RUSK variable name: ${name}`);
+    if (Object.prototype.hasOwnProperty.call(ruskLocals, name)) ruskLocals[name] = value;
+    else ruskState[name] = value;
+    if (window.RuskWeb && typeof window.RuskWeb.setState === "function") window.RuskWeb.setState(name, value);
+    return value;
+  };
+  const ruskGet = name => Object.prototype.hasOwnProperty.call(ruskLocals, name) ? ruskLocals[name] : ruskState[name];
+  const ruskBool = value => typeof value === "boolean" ? value : typeof value === "number" ? value !== 0 : typeof value === "string" ? value.length > 0 : Array.isArray(value) ? value.length > 0 : value != null;
+  const ruskString = value => value == null ? "null" : Array.isArray(value) ? `[${value.map(ruskString).join(", ")}]` : String(value);
+  const ruskAdd = (left, right) => typeof left === "string" || typeof right === "string" ? ruskString(left) + ruskString(right) : left + right;
+  const ruskEqual = (left, right) => ruskString(left) === ruskString(right);
+  const ruskRepeat = (count, body) => {
+    count = Number(count);
+    if (!Number.isFinite(count) || count < 0 || count > 1000000 || !Number.isInteger(count)) throw new Error("Repeat count must be an integer between 0 and 1,000,000");
+    for (let i = 0; i < count; i++) body();
+  };
+  const ruskDesktopOnly = name => { throw new Error(`RUSK built-in '${name}()' is desktop-only and unavailable in the web runtime`); };
+  const ruskBuiltin = (name, args) => {
+    switch (name) {
+      case "length": if (args.length !== 1) throw new Error("length() expects exactly one argument"); if (typeof args[0] === "string" || Array.isArray(args[0])) return args[0].length; throw new Error("length() only supports strings and arrays");
+      case "to_number": if (args.length !== 1) throw new Error("to_number() expects exactly one argument"); { const value = Number(args[0]); if (!Number.isFinite(value)) throw new Error(`'${args[0]}' is not a valid number`); return value; }
+      case "random": if (args.length !== 2) throw new Error("random() expects minimum and maximum"); if (args[0] > args[1]) throw new Error("Random minimum cannot exceed maximum"); return args[0] + Math.random() * (args[1] - args[0]);
+      case "random_int": if (args.length !== 2) throw new Error("random_int() expects minimum and maximum"); { const min = Number(args[0]), max = Number(args[1]); if (!Number.isInteger(min) || !Number.isInteger(max) || min > max) throw new Error("random_int() bounds must be ordered integers"); return Math.floor(Math.random() * (max - min + 1)) + min; }
+      case "say": case "print": if (args.length !== 1) throw new Error(`${name}() expects exactly one argument`); console.log(ruskString(args[0])); return null;
+      case "window": case "input_box": case "input_value": case "input_submitted": case "clear_input": case "clear": case "rect": case "pixel": case "rect_outline": case "rounded_rect": case "rounded_rect_outline": case "circle": case "circle_outline": case "line": case "triangle": case "polygon": case "polygon_outline": case "arc": case "ellipse": case "ellipse_outline": case "text": case "color": case "rgb": case "rgba": case "gradient_vertical": case "gradient_horizontal": case "key_down": case "key_pressed": case "mouse_down": case "mouse_pressed": case "mouse_x": case "mouse_y": case "delta_time": case "time": case "fps": case "screen_width": case "screen_height": case "quit": ruskDesktopOnly(name);
+      default: throw new Error(`Unknown RUSK built-in '${name}()'`);
+    }
+  };
+  const ruskCall = (name, args = []) => {
+    if (Object.prototype.hasOwnProperty.call(ruskFunctions, name)) {
+      const fn = ruskFunctions[name];
+      if (args.length !== fn.parameters.length) throw new Error(`Function '${name}' expected ${fn.parameters.length} arguments, got ${args.length}`);
+      const previous = ruskLocals;
+      ruskLocals = { ...previous };
+      fn.parameters.forEach((parameter, index) => { ruskLocals[parameter] = args[index]; });
+      try { fn.body(); } finally { ruskLocals = previous; }
+      return null;
+    }
+    return ruskBuiltin(name, args);
+  };
+  ruskFunctions["increment"] = { parameters: [], body: () => {
+    ruskBind("counter", ruskAdd(ruskGet("counter"), 1));
+  } };
+  ruskBind("counter", 0);
+  const externalApp = window.RuskApp && typeof window.RuskApp === "object" ? window.RuskApp : {};
+  window.RuskApp = { ...externalApp };
+  Object.entries(ruskFunctions).forEach(([name, fn]) => {
+    if (!Object.prototype.hasOwnProperty.call(window.RuskApp, name)) window.RuskApp[name] = payload => ruskCall(name, payload && payload.ruskArgs ? payload.ruskArgs : []);
+  });
+  window.RuskWeb.execute = (name, args = []) => ruskCall(name, args);
+})();
+
+</script>
+</head>
+<body>
+<main style="background-color: #0b0b14"><div class="rusk-column" style="gap: 24px; align-items: center; padding: 50px"><p style="color: #a970ff; font-size: 56px">
+                RUSK
+            </p><p style="color: white; font-size: 20px">
+                Build anything. Your way.
+            </p><div class="rusk-row" style="gap: 16px; justify-content: center"><button style="background-color: #813cff; color: white">
+                    Get Started
+                </button><button style="background-color: #252536; color: white">
+                    Documentation
+                </button></div><p data-rusk-bind="counter" style="color: white; font-size: 20px">0</p><button data-rusk-on-click="increment" style="background-color: #813cff; color: white">
+                Increment
+            </button><div class="rusk-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; width: 100%"><div class="rusk-container" style="background-color: #191929; padding: 25px"><p style="color: white">Fast</p></div><div class="rusk-container" style="background-color: #191929; padding: 25px"><p style="color: white">Flexible</p></div><div class="rusk-container" style="background-color: #191929; padding: 25px"><p style="color: white">Powerful</p></div></div></div></main>
+</body>
+</html>
